@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI任務仕分け</title>
+<meta name="description" content="業務の手順ごとに金額と顧客影響を選ぶと、AIに任せる・人が承認・AI禁止に色分けします。AIエージェント導入の稟議前チェック用。">
+<style>
+:root{
+  --bg:#f3f5f9;--surface:#fff;--surface-2:#eef1f6;--ink:#1c2430;--ink-2:#4d5868;--ink-3:#7a8494;--line:#dde2ea;
+  --accent:#1d3c6e;--on-accent:#fff;
+  --ai:#1a7f37;--ai-soft:#e3f3e7;--hu:#8a5a00;--hu-soft:#fbefd2;--ng:#c62828;--ng-soft:#fbe3e1;
+  --bar-ai:#2e9e4f;--bar-hu:#e8a317;--bar-ng:#d03b3b;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#12161c;--surface:#1b2129;--surface-2:#242b35;--ink:#e9edf3;--ink-2:#b8c1cd;--ink-3:#8b95a3;--line:#323a46;
+  --accent:#8fb4ee;--on-accent:#0c1a2e;
+  --ai:#7fd497;--ai-soft:#183323;--hu:#f0c35a;--hu-soft:#3a2e12;--ng:#f58a82;--ng-soft:#3d1c1a;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,system-ui,sans-serif;line-height:1.6;padding-bottom:72px}
+button,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+header{border-top:6px solid var(--accent);padding:20px 0 8px}
+.eyebrow{margin:0;font-size:13px;font-weight:700;color:var(--accent)}
+h1{margin:2px 0 6px;font-size:26px}
+.lead{margin:0;color:var(--ink-2);font-size:15px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px}
+.b-ai{background:var(--ai-soft);color:var(--ai)}.b-hu{background:var(--hu-soft);color:var(--hu)}.b-ng{background:var(--ng-soft);color:var(--ng)}
+.layout{display:grid;gap:16px;padding:14px 0 32px}
+@media(min-width:920px){.layout{grid-template-columns:360px minmax(0,1fr);align-items:start}.side{position:sticky;top:12px}}
+.side,.main{display:grid;gap:16px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+h2{font-size:17px;margin:0 0 12px}
+.lbl{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:4px}
+input[type=text],textarea{width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px}
+textarea{min-height:110px}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.btn{min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:700;cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.chip{min-height:38px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+details{margin-top:10px}summary{cursor:pointer;font-size:14px;color:var(--accent);font-weight:700}
+.field{margin-bottom:16px}
+.val{font-weight:800;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px}
+.ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)}
+.rules{font-size:13px;color:var(--ink-2);background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.rules p{margin:6px 0 2px;font-weight:700}.rules ul{margin:0;padding-left:1.2em}
+.sum-line{font-size:15px;margin:0 0 10px}
+.bar{display:flex;gap:2px;height:28px;border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.bar span{display:flex;align-items:center;padding-left:8px;font-size:13px;font-weight:700;color:#fff;white-space:nowrap;min-width:0}
+.bar .s-hu{color:#0b0b0b}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.tile{border-radius:10px;padding:8px 10px}
+.tile b{display:block;font-size:26px;line-height:1.2}
+.tile small{font-size:12px;font-weight:700}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px;font-size:13px}
+.flow button{border:0;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:13px;font-weight:700;max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arrow{color:var(--ink-3)}
+.steps{display:grid;gap:12px}
+.card{border:1px solid var(--line);border-left:8px solid var(--ai);border-radius:12px;padding:12px;background:var(--surface)}
+.card.hu{border-left-color:var(--bar-hu)}.card.ng{border-left-color:var(--bar-ng)}.card.ai{border-left-color:var(--bar-ai)}
+.card-top{display:flex;gap:6px;align-items:center}
+.no{flex:none;font-weight:800;color:var(--ink-3);width:2em}
+.card-top input{flex:1;min-width:0;font-weight:700}
+.ico{min-width:38px;min-height:38px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;cursor:pointer}
+.judge{margin:10px 0 6px}
+.grid2{display:grid;gap:10px}
+@media(min-width:620px){.grid2{grid-template-columns:1fr 1fr}}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.seg button{min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;font-weight:700}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.desc{font-size:12px;color:var(--ink-3);margin-top:2px}
+.toggles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.reasons{margin:8px 0 0;padding-left:1.2em;font-size:13px;color:var(--ink-2)}
+.how{font-size:13px;margin-top:6px;padding:6px 10px;border-radius:8px;background:var(--surface-2)}
+.empty{color:var(--ink-3);text-align:center;padding:24px 0}
+.export{display:flex;flex-wrap:wrap;gap:8px}
+.note{font-size:12px;color:var(--ink-3);margin:10px 0 0}
+.tally{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);z-index:5}
+.tally .badge{font-size:14px}
+@media(min-width:920px){.tally{display:none}body{padding-bottom:0}}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+#report{display:none}
+@media print{body>*{display:none!important}#report{display:block!important}body{background:#fff;color:#000;padding:0}
+#report table{width:100%;border-collapse:collapse;font-size:12px}#report th,#report td{border:1px solid #999;padding:4px 6px;text-align:left;vertical-align:top}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">AIエージェント導入 稟議前チェック</p>
+  <h1>AI任務仕分け</h1>
+  <p class="lead">業務の手順を入れて、手順ごとに金額と顧客影響を選ぶだけ。「AIに任せる」「人が承認」「AI禁止」に色分けし、稟議書に貼れる形にまとめます。</p>
+  <div class="legend"><span class="badge b-ai">○ AIに任せる</span><span class="badge b-hu">△ 人が承認</span><span class="badge b-ng">✕ AI禁止</span></div>
+</header>
+
+<main class="wrap layout">
+  <div class="side">
+    <section class="panel">
+      <h2>1. 業務と手順を入れる</h2>
+      <label class="lbl" for="title">業務名</label>
+      <input type="text" id="title" placeholder="例：問い合わせ対応">
+      <p class="lbl" style="margin-top:12px">サンプルから始める</p>
+      <div class="chips" id="samples"></div>
+      <label class="lbl" for="newStep">手順を追加</label>
+      <div class="row"><input type="text" id="newStep" placeholder="例：申込書の不備チェック"><button class="btn pri" id="addBtn">追加</button></div>
+      <details><summary>まとめて貼り付け（1行に1手順）</summary>
+        <textarea id="bulk" placeholder="受付&#10;本人確認&#10;審査&#10;結果連絡"></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn" id="bulkBtn">この内容で追加</button></div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>2. 判定ルール</h2>
+      <div class="field"><span class="lbl">人の承認が必要な金額：<span class="val" id="vApprove"></span> 以上</span>
+        <input type="range" id="rApprove" min="1" max="9" step="1" aria-label="承認ラインの金額"><div class="ticks"><span>1万円</span><span>10億円</span></div></div>
+      <div class="field"><span class="lbl">AI禁止にする金額：<span class="val" id="vBan"></span> 以上</span>
+        <input type="range" id="rBan" min="1" max="9" step="1" aria-label="AI禁止ラインの金額"><div class="ticks"><span>1万円</span><span>10億円</span></div></div>
+      <div class="field"><span class="lbl">顧客影響が <span class="val" id="vLine"></span> 以上なら人が承認</span>
+        <input type="range" id="rLine" min="1" max="3" step="1" aria-label="顧客影響の承認ライン"><div class="ticks"><span>小（慎重）</span><span>中（標準）</span><span>大（積極）</span></div></div>
+      <div class="rules" id="rulesText"></div>
+      <button class="btn" id="resetRules" style="margin-top:10px">ルールを初期値に戻す</button>
+    </section>
+  </div>
+
+  <div class="main">
+    <section class="panel" id="summary">
+      <h2>仕分け結果</h2>
+      <p class="sum-line" id="sumLine"></p>
+      <div class="bar" id="bar" role="img"></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="flow" id="flow"></div>
+    </section>
+
+    <section class="panel">
+      <h2>3. 手順ごとに金額と顧客影響を選ぶ</h2>
+      <div class="steps" id="steps"></div>
+    </section>
+
+    <section class="panel">
+      <h2>4. 稟議用にまとめる</h2>
+      <div class="export">
+        <button class="btn pri" id="copyBtn">稟議用テキストをコピー</button>
+        <button class="btn" id="csvBtn">CSVで保存</button>
+        <button class="btn" id="printBtn">印刷・PDF</button>
+        <button class="btn" id="clearBtn">手順をすべて消す</button>
+      </div>
+      <p class="note">※本ツールの判定は社内検討用の目安です。最終判断は社内規程・リスク管理部門・コンプライアンス部門の確認に従ってください。入力内容はこの端末のブラウザ内にだけ保存され、外部には送信されません。</p>
+    </section>
+  </div>
+</main>
+
+<div class="tally" id="tally"></div>
+<div class="toast" id="toast" role="status"></div>
+<div id="report"></div>
+
+<script>
+const AMT=[0,1,10,50,100,500,1000,5000,10000,100000];
+const AMT_L=["なし","1万円","10万円","50万円","100万円","500万円","1,000万円","5,000万円","1億円","10億円以上"];
+const IMP=["なし","小","中","大"];
+const IMP_D=["行内の作業だけ。お客さまには届かない","案内・照会など。誤っても訂正で済む","手続きや契約内容に影響する","与信・資産・権利に直結する"];
+const FLAGS=[["pii","個人情報を扱う"],["irrev","取り消しが難しい"],["legal","法令・規制上の判断"]];
+const CLS={ai:{l:"AIに任せる",m:"○",b:"b-ai",how:"AIが実行。実行ログを残し、定期的に抜き取りで確認する。"},
+hu:{l:"人が承認",m:"△",b:"b-hu",how:"AIが下書き・提案まで。担当者が確認・承認してから実行する。"},
+ng:{l:"AI禁止",m:"✕",b:"b-ng",how:"AIに判断も実行もさせない。人が判断して行う。"}};
+const DEF_RULES={approve:4,ban:8,line:2};
+const S=(n,a,i,f="")=>({name:n,amt:a,imp:i,pii:f.includes("p"),irrev:f.includes("r"),legal:f.includes("l")});
+const SAMPLES={
+"問い合わせ対応":[S("問い合わせ内容の分類・担当振り分け",0,0,"p"),S("よくある質問への回答案の作成",0,1),S("住所変更など手続きの受付",0,2,"p"),S("手数料の返金対応",1,1),S("苦情の一次受付と記録",0,2,"p"),S("投資商品の提案・勧誘",5,3,"pl"),S("対応履歴の要約・記録",0,0,"p")],
+"住宅ローン事前審査":[S("申込書類の受付・不備チェック",0,0,"p"),S("本人確認書類と申込内容の照合",0,1,"p"),S("信用情報・年収データの取りまとめ",0,0,"p"),S("返済比率の計算とスコアリング",7,2,"p"),S("事前審査の可否判断",7,3,"prl"),S("審査結果のお客さまへの連絡",0,2,"p")],
+"振込・送金事務":[S("依頼データの取り込み・形式チェック",0,0),S("受取人の制裁リスト一次照合",0,1,"l"),S("疑わしい取引の届出判断",0,3,"l"),S("定例振込（10万円以下）の実行",2,1,"r"),S("大口送金（10億円以上）の実行",9,3,"r"),S("処理結果の記帳・日次レポート作成",0,0)]
+};
+let st,uid=0;
+const $=id=>document.getElementById(id);
+function fresh(t){return{title:t,rules:{...DEF_RULES},steps:SAMPLES[t].map(s=>({...s,id:++uid}))}}
+function load(){try{const j=JSON.parse(localStorage.getItem("ninmu-v1"));if(j&&j.steps){j.steps.forEach(s=>s.id=++uid);j.rules={...DEF_RULES,...j.rules};return j}}catch(e){}return fresh("問い合わせ対応")}
+function save(){try{localStorage.setItem("ninmu-v1",JSON.stringify(st))}catch(e){}}
+function judge(s){const r=st.rules,ng=[],hu=[];
+ if(s.amt>=r.ban)ng.push(`扱う金額が禁止ライン（${AMT_L[r.ban]}）以上`);
+ if(s.imp===3&&s.irrev)ng.push("顧客影響「大」で、取り消しが難しい");
+ if(s.imp===3&&s.legal)ng.push("顧客影響「大」で、法令・規制上の判断を含む");
+ if(ng.length)return{c:"ng",r:ng};
+ if(s.amt>=r.approve)hu.push(`扱う金額が承認ライン（${AMT_L[r.approve]}）以上`);
+ if(s.imp>=r.line)hu.push(`顧客影響が「${IMP[r.line]}」以上`);
+ if(s.legal)hu.push("法令・規制上の判断を含む");
+ if(s.irrev)hu.push("取り消しが難しい");
+ if(s.pii&&s.imp>=1)hu.push("個人情報を扱い、お客さまに影響がある");
+ if(hu.length)return{c:"hu",r:hu};
+ return{c:"ai",r:["どの承認・禁止の条件にも当たらない"]}}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderSamples(){$("samples").innerHTML=Object.keys(SAMPLES).map(k=>`<button class="chip" data-s="${k}" aria-pressed="${st.title===k}">${k}</button>`).join("")+`<button class="chip" data-s="">空から始める</button>`}
+function cardHTML(s,i){return `<article class="card" id="c${s.id}" data-id="${s.id}">
+ <div class="card-top"><span class="no">${i+1}</span><input type="text" data-k="name" value="${esc(s.name)}" aria-label="手順名">
+ <button class="ico" data-a="up" aria-label="上へ">↑</button><button class="ico" data-a="down" aria-label="下へ">↓</button><button class="ico" data-a="del" aria-label="削除">✕</button></div>
+ <div class="judge"></div>
+ <div class="grid2">
+  <div><span class="lbl">この手順で扱う金額：<span class="val amtv"></span></span><input type="range" min="0" max="9" step="1" data-k="amt" value="${s.amt}" aria-label="扱う金額"></div>
+  <div><span class="lbl">顧客影響</span><div class="seg">${IMP.map((n,k)=>`<button data-imp="${k}" aria-pressed="${s.imp===k}">${n}</button>`).join("")}</div><div class="desc impd"></div></div>
+ </div>
+ <div class="toggles">${FLAGS.map(([k,n])=>`<button class="chip" data-f="${k}" aria-pressed="${s[k]}">${n}</button>`).join("")}</div>
+ <ul class="reasons"></ul><div class="how"></div></article>`}
+function renderSteps(){$("steps").innerHTML=st.steps.length?st.steps.map(cardHTML).join(""):`<p class="empty">手順を追加すると、ここに色分けされて表示されます。</p>`;st.steps.forEach(updateCard);update()}
+function updateCard(s){const el=$("c"+s.id);if(!el)return;const j=judge(s),c=CLS[j.c];
+ el.className="card "+j.c;el.querySelector(".judge").innerHTML=`<span class="badge ${c.b}">${c.m} ${c.l}</span>`;
+ el.querySelector(".amtv").textContent=AMT_L[s.amt];el.querySelector(".impd").textContent=IMP_D[s.imp];
+ el.querySelectorAll("[data-imp]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.imp===s.imp));
+ el.querySelectorAll("[data-f]").forEach(b=>b.setAttribute("aria-pressed",s[b.dataset.f]));
+ el.querySelector(".reasons").innerHTML=j.r.map(x=>`<li>${esc(x)}</li>`).join("");el.querySelector(".how").textContent="運用："+c.how}
+function counts(){const n={ai:0,hu:0,ng:0};st.steps.forEach(s=>n[judge(s).c]++);return n}
+function update(){const r=st.rules,n=counts(),t=st.steps.length;
+ $("vApprove").textContent=AMT_L[r.approve];$("vBan").textContent=AMT_L[r.ban];$("vLine").textContent="「"+IMP[r.line]+"」";
+ $("rApprove").value=r.approve;$("rBan").value=r.ban;$("rLine").value=r.line;
+ $("rulesText").innerHTML=`<p>✕ AI禁止（どれか1つでも）</p><ul><li>扱う金額が${AMT_L[r.ban]}以上</li><li>顧客影響「大」かつ取り消しが難しい</li><li>顧客影響「大」かつ法令・規制上の判断</li></ul><p>△ 人が承認（禁止に当たらず、どれか1つでも）</p><ul><li>扱う金額が${AMT_L[r.approve]}以上</li><li>顧客影響が「${IMP[r.line]}」以上</li><li>法令・規制上の判断を含む／取り消しが難しい</li><li>個人情報を扱い、顧客影響が「小」以上</li></ul><p>○ AIに任せる：上のどれにも当たらない</p>`;
+ $("sumLine").textContent=t?`「${st.title||"この業務"}」の${t}手順のうち、AIに任せられるのは${n.ai}手順。人の承認ポイントは${n.hu}か所、AI禁止は${n.ng}か所です。`:"まだ手順がありません。";
+ $("bar").setAttribute("aria-label",`AIに任せる${n.ai}件、人が承認${n.hu}件、AI禁止${n.ng}件`);
+ $("bar").innerHTML=t?[["ai","--bar-ai","s-ai"],["hu","--bar-hu","s-hu"],["ng","--bar-ng","s-ng"]].filter(([k])=>n[k]).map(([k,v,c])=>{const p=Math.round(n[k]/t*100);return `<span class="${c}" style="flex:${n[k]};background:var(${v})" title="${CLS[k].l} ${n[k]}件（${p}%）">${p>=12?p+"%":""}</span>`}).join(""):"";
+ $("tiles").innerHTML=["ai","hu","ng"].map(k=>`<div class="tile ${CLS[k].b}"><small>${CLS[k].m} ${CLS[k].l}</small><b>${n[k]}</b></div>`).join("");
+ $("flow").innerHTML=st.steps.map((s,i)=>{const c=judge(s).c;return `${i?'<span class="arrow">→</span>':""}<button class="${CLS[c].b}" data-go="${s.id}" title="${esc(s.name)}">${i+1} ${CLS[c].m} ${esc(s.name||"（無題）")}</button>`}).join("");
+ $("tally").innerHTML=["ai","hu","ng"].map(k=>`<span class="badge ${CLS[k].b}">${CLS[k].m} ${CLS[k].l} ${n[k]}</span>`).join("");
+ renderReport();save()}
+function reportText(){const r=st.rules,n=counts();let t=`【AIエージェント導入 業務仕分け】${st.title||""}\n判定ルール：承認ライン ${AMT_L[r.approve]}以上／禁止ライン ${AMT_L[r.ban]}以上／顧客影響「${IMP[r.line]}」以上は人が承認\n集計：AIに任せる ${n.ai}件・人が承認 ${n.hu}件・AI禁止 ${n.ng}件（全${st.steps.length}手順）\n\n`;
+ st.steps.forEach((s,i)=>{const j=judge(s),f=FLAGS.filter(([k])=>s[k]).map(x=>x[1]).join("・");t+=`${i+1}. ${s.name}\n   判定：${CLS[j.c].m} ${CLS[j.c].l}\n   金額：${AMT_L[s.amt]}／顧客影響：${IMP[s.imp]}${f?"／"+f:""}\n   理由：${j.r.join("、")}\n   運用：${CLS[j.c].how}\n`});
+ return t+"\n※社内検討用の目安。最終判断は社内規程・リスク管理部門の確認に従う。"}
+function renderReport(){$("report").innerHTML=`<h2>AIエージェント導入 業務仕分け：${esc(st.title||"")}</h2><table><tr><th>No</th><th>手順</th><th>金額</th><th>顧客影響</th><th>確認項目</th><th>判定</th><th>理由</th></tr>${st.steps.map((s,i)=>{const j=judge(s);return `<tr><td>${i+1}</td><td>${esc(s.name)}</td><td>${AMT_L[s.amt]}</td><td>${IMP[s.imp]}</td><td>${FLAGS.filter(([k])=>s[k]).map(x=>x[1]).join("、")}</td><td>${CLS[j.c].m} ${CLS[j.c].l}</td><td>${esc(j.r.join("、"))}</td></tr>`}).join("")}</table><p>※社内検討用の目安です。</p>`}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),1800)}
+const find=el=>{const c=el.closest(".card");return c&&st.steps.find(s=>s.id==c.dataset.id)};
+function addSteps(names){names.map(x=>x.trim()).filter(Boolean).forEach(n=>st.steps.push({name:n,amt:0,imp:0,pii:false,irrev:false,legal:false,id:++uid}));renderSteps()}
+
+$("steps").addEventListener("input",e=>{const s=find(e.target);if(!s)return;const k=e.target.dataset.k;
+ if(k==="amt"){s.amt=+e.target.value;updateCard(s);update()}else if(k==="name"){s.name=e.target.value;update()}});
+$("steps").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const s=find(b);if(!s)return;const i=st.steps.indexOf(s);
+ if(b.dataset.imp){s.imp=+b.dataset.imp}else if(b.dataset.f){s[b.dataset.f]=!s[b.dataset.f]}
+ else if(b.dataset.a==="del"){st.steps.splice(i,1);return renderSteps()}
+ else if(b.dataset.a==="up"&&i>0){st.steps.splice(i-1,0,st.steps.splice(i,1)[0]);return renderSteps()}
+ else if(b.dataset.a==="down"&&i<st.steps.length-1){st.steps.splice(i+1,0,st.steps.splice(i,1)[0]);return renderSteps()}
+ updateCard(s);update()});
+$("flow").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)$("c"+b.dataset.go).scrollIntoView({behavior:"smooth",block:"center"})});
+$("samples").addEventListener("click",e=>{const b=e.target.closest("[data-s]");if(!b)return;const k=b.dataset.s;
+ if(k){const r=st.rules;st=fresh(k);st.rules=r}else{st.title="";st.steps=[]}
+ $("title").value=st.title;renderSamples();renderSteps()});
+$("title").addEventListener("input",e=>{st.title=e.target.value;renderSamples();update()});
+$("addBtn").onclick=()=>{addSteps([$("newStep").value]);$("newStep").value="";$("newStep").focus()};
+$("newStep").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();$("addBtn").click()}});
+$("bulkBtn").onclick=()=>{addSteps($("bulk").value.split("\n"));$("bulk").value=""};
+$("rApprove").addEventListener("input",e=>{const v=+e.target.value;st.rules.approve=v;if(st.rules.ban<v)st.rules.ban=v;refresh()});
+$("rBan").addEventListener("input",e=>{const v=+e.target.value;st.rules.ban=v;if(st.rules.approve>v)st.rules.approve=v;refresh()});
+$("rLine").addEventListener("input",e=>{st.rules.line=+e.target.value;refresh()});
+$("resetRules").onclick=()=>{st.rules={...DEF_RULES};refresh();toast("ルールを初期値に戻しました")};
+function refresh(){st.steps.forEach(updateCard);update()}
+$("copyBtn").onclick=async()=>{const t=reportText();try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()}toast("稟議用テキストをコピーしました")};
+$("csvBtn").onclick=()=>{const q=v=>`"${String(v).replace(/"/g,'""')}"`;const rows=[["No","手順","金額","顧客影響","個人情報","取り消し困難","法令判断","判定","理由"]].concat(st.steps.map((s,i)=>{const j=judge(s);return[i+1,s.name,AMT_L[s.amt],IMP[s.imp],s.pii?"○":"",s.irrev?"○":"",s.legal?"○":"",CLS[j.c].l,j.r.join("、")]}));
+ const blob=new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`AI任務仕分け_${st.title||"業務"}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$("printBtn").onclick=()=>window.print();
+$("clearBtn").onclick=()=>{if(confirm("手順をすべて消しますか？")){st.steps=[];renderSteps()}};
+
+st=load();$("title").value=st.title;renderSamples();renderSteps();
+</script>
+</body>
+</html>
