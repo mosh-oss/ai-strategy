@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="宴会の人数とコースから、食材の仕込み量と卸への発注締切を計算する仕込み帖。">
+  <meta name="theme-color" content="#33493b">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2333493b'/%3E%3Cpath d='M7 17h18c-1 7-17 7-18 0m6-9v5m6-5v5' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <title>仕込み帖｜宴会の仕込みと発注の目安</title>
+  <style>
+    :root{--paper:#f5f4ef;--white:#fffefb;--ink:#283b30;--muted:#6a7169;--green:#33493b;--green-soft:#edf1e9;--line:#e0e3d9;--accent:#ba4e2c;--accent-soft:#fbefe7;--danger:#aa3430;--shadow:0 6px 24px #263b2c05;--radius:18px}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}button,input,select,textarea{font:inherit;color:inherit}button,input,textarea{touch-action:manipulation}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}input,button,select,textarea{outline-offset:4px}a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #a96335}button{border:0;background:none}h1,h2,h3,p{margin:0}button,svg{flex-shrink:0}svg.icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[hidden]{display:none!important}.skip{position:fixed;top:-100px;left:16px;background:white;padding:12px;z-index:100}.skip:focus{top:12px}
+    .topbar{border-bottom:1px solid var(--line);background:#fffefbd9}.topbar-inner{max-width:1248px;padding:22px 28px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:11px}.brand-icon{width:40px;height:40px;display:grid;place-items:center;background:var(--green);color:white;border-radius:12px}.brand-icon svg{width:26px;height:26px}.brand-name{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-weight:700;letter-spacing:.11em;font-size:23px}.brand-note{font-size:11px;color:var(--muted);margin-left:11px;padding-left:14px;border-left:1px solid var(--line)}.top-actions{display:flex;align-items:center;gap:22px}.save-status{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}.save-status:before{content:"";width:6px;height:6px;border-radius:50%;background:#788e62}.text-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;font-size:12px;font-weight:600;padding:7px 10px;border-radius:9px}.text-button:hover{background:var(--green-soft)}
+    main{max-width:1248px;margin:auto;padding:38px 28px 48px}.hero{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:31px}.eyebrow{font-size:10px;letter-spacing:.19em;color:var(--accent);font-weight:750;margin-bottom:9px}.hero h1{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;font-weight:600;font-size:35px;line-height:1.5}.hero p{color:var(--muted);margin-top:8px;font-size:13px}.hero-stamp{width:69px;height:69px;border:1px solid #bac5ad;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(9deg);color:#617752;font-family:serif;font-size:13px;letter-spacing:.14em;line-height:1.6;margin-right:15px}.workspace{display:grid;grid-template-columns:318px minmax(0,1fr);gap:25px;align-items:start}.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.reservation{padding:25px 23px;position:sticky;top:20px}.section-heading{display:flex;align-items:center;gap:10px}.section-heading h2{font-size:16px;font-weight:700;letter-spacing:.025em}.step{color:var(--accent);font-family:Georgia,serif;font-style:italic;font-size:17px}.section-hint{color:var(--muted);font-size:11px;margin-top:5px}.field{margin-top:22px}.field-label{font-size:12px;font-weight:650;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.optional{font-size:10px;color:var(--muted);font-weight:400}.input{width:100%;min-width:0;border:1px solid #d5dbcf;background:#fffefb;border-radius:9px;min-height:44px;padding:9px 12px;transition:border-color .15s}.input:focus{border-color:#74866b}.input::placeholder{color:#969b93}.input[aria-invalid=true]{border-color:var(--danger)}input[type=date]{min-width:0;width:100%;max-width:100%;appearance:none;-webkit-appearance:none}input[type=date]::-webkit-date-and-time-value{text-align:left}.date-hint{font-size:11px;color:var(--muted);margin-top:5px}.people-control{display:flex;align-items:center;justify-content:center;gap:16px;background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:10px 12px}.stepper{width:40px;min-height:40px;background:var(--white);border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:22px}.stepper:hover{border-color:#899a7c}.people-value{display:flex;align-items:baseline;justify-content:center;flex:1;gap:3px}.people-value input{width:76px;border:0;background:none;font-size:35px;text-align:center;font-family:Georgia,serif;font-variant-numeric:tabular-nums;padding:0;appearance:textfield;-moz-appearance:textfield;line-height:1.4}.people-value input::-webkit-inner-spin-button,.people-value input::-webkit-outer-spin-button{appearance:none;margin:0}.people-value span{font-size:13px}.range{width:100%;height:27px;accent-color:var(--green);cursor:pointer;margin:9px 0 0}.range-ends{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:-4px}.presets{display:flex;gap:6px;margin-top:10px}.preset{flex:1;border:1px solid var(--line);border-radius:7px;background:white;min-height:34px;font-size:11px}.preset:hover,.preset[aria-pressed=true]{background:var(--green-soft);border-color:#8f9f81;color:var(--green)}fieldset{border:0;padding:0;margin:0;min-width:0}legend{padding:0}.course-options{display:grid;gap:8px}.course-option{position:relative;display:block;cursor:pointer}.course-option input{position:absolute;opacity:0;width:1px;height:1px}.course-surface{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--white);transition:background .15s,border-color .15s}.course-option input:checked+.course-surface{background:var(--green-soft);border-color:#819271}.course-option input:focus-visible+.course-surface{outline:3px solid #a96335;outline-offset:3px}.radio-dot{width:17px;height:17px;border:1.5px solid #b4beab;border-radius:50%;display:grid;place-items:center;flex-shrink:0}.course-option input:checked+.course-surface .radio-dot{border-color:var(--green)}.course-option input:checked+.course-surface .radio-dot:after{content:"";width:9px;height:9px;border-radius:50%;background:var(--green)}.course-name{font-size:12px;font-weight:700;display:block}.course-description{font-size:10px;color:var(--muted);display:block;margin-top:2px}.buffer-value{color:var(--accent);font-size:13px}.buffer-description{font-size:10px;color:var(--muted)}.form-divider{margin:22px 0 0;border-top:1px solid var(--line)}.sample-note{margin-top:20px;background:#f5f4ed;padding:10px 12px;border-radius:8px;font-size:10px;color:var(--muted);display:flex;align-items:flex-start;gap:7px}.sample-note svg{width:15px;height:15px;margin-top:2px;flex-shrink:0}.field-error{color:var(--danger);font-size:11px;margin-top:6px}
+    .results{min-width:0}.result-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}.result-heading h2{font-size:17px;letter-spacing:.04em}.live-tag{display:flex;align-items:center;gap:6px;font-size:10px;color:#6b7e59}.live-tag:before{content:"";width:5px;height:5px;background:#7c9466;border-radius:50%}.result-meta{font-size:11px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}.summary-grid{display:grid;grid-template-columns:1fr 1fr 1.65fr;gap:11px;margin-bottom:20px}.summary-card{padding:18px 18px 15px;min-width:0}.summary-label{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}.summary-label svg{width:15px;height:15px}.summary-number{font-size:34px;font-family:Georgia,serif;line-height:1.3;font-variant-numeric:tabular-nums;margin-top:6px;white-space:nowrap}.summary-number small{font-family:inherit;font-size:13px;margin-left:4px}.summary-detail{font-size:10px;color:var(--muted);margin-top:4px}.deadline-summary{background:var(--green);border-color:var(--green);color:#fff}.deadline-summary .summary-label,.deadline-summary .summary-detail{color:#d3ddcd}.deadline-summary .summary-number{font-size:27px;margin-top:10px}.deadline-summary .summary-number small{font-size:12px}.summary-overdue{color:#ffdabf!important}.alert{margin:0 0 17px;background:var(--accent-soft);color:#904326;border:1px solid #eed5c5;border-radius:11px;padding:12px 14px;display:flex;gap:9px;font-size:11px;align-items:flex-start}.alert svg{width:17px;height:17px;margin-top:1px}.panel{padding:22px 23px;margin-bottom:20px}.panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-title{display:flex;align-items:center;gap:9px}.panel-title h3{font-size:15px}.panel-title svg{color:#738567}.panel-subtitle{font-size:10px;color:var(--muted);margin-top:4px}.progress-label{font-size:10px;color:var(--muted);white-space:nowrap}.progress-label strong{color:var(--green);font-size:13px;font-weight:500}.progress-track{height:3px;background:var(--green-soft);border-radius:3px;margin-top:17px;overflow:hidden}.progress-fill{height:100%;background:#879a6b;transition:width .2s;width:0}.ingredients{width:100%;border-collapse:collapse;margin-top:8px;text-align:left}.ingredients caption{text-align:left}.ingredients thead{color:var(--muted);font-size:10px}.ingredients th{font-weight:400;padding:9px 0;border-bottom:1px solid var(--line)}.ingredients .amount-col{text-align:right}.ingredients th:first-child{width:37px}.ingredients td{padding:13px 0;border-bottom:1px solid #eceee7}.ingredients tr:last-child td{border:0}.ingredients .check-cell{vertical-align:middle}.check-label{width:36px;min-height:40px;display:flex;align-items:center;cursor:pointer}.check-label input{width:18px;height:18px;accent-color:var(--green);margin:0;cursor:pointer}.ingredient-name{font-weight:650;font-size:12px;display:block;line-height:1.5}.ingredient-detail{font-size:10px;color:var(--muted);display:block;margin-top:2px}.supplier-tag{font-size:10px;color:#708065;background:var(--green-soft);border-radius:4px;padding:3px 7px;white-space:nowrap}.amount{text-align:right;white-space:nowrap}.amount strong{font-family:Georgia,serif;font-size:22px;font-weight:400;letter-spacing:.015em}.amount span{font-size:11px;color:var(--muted);margin-left:4px}.ingredients tr.is-done .ingredient-name{text-decoration:line-through;color:#7f887b}.ingredients tr.is-done .amount{color:#7f887b}.list-foot{font-size:10px;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px;margin-top:5px;display:flex;gap:6px;align-items:flex-start}.list-foot svg{width:14px;height:14px;margin-top:2px}.panel-actions{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:16px;margin-top:17px}.button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:43px;padding:9px 16px;border-radius:9px;border:1px solid var(--line);font-size:12px;font-weight:650;background:var(--white)}.button:hover{background:var(--green-soft)}.button-primary{background:var(--green);border-color:var(--green);color:#fff}.button-primary:hover{background:#263c2e}.button .icon{width:17px;height:17px}.copy-button{flex:1}.deadline-list{margin:20px 0 0;list-style:none;padding:0}.deadline-item{display:grid;grid-template-columns:26px minmax(0,1fr);gap:9px;position:relative;padding:0 0 20px}.deadline-item:not(:last-child):before{content:"";position:absolute;left:10px;top:22px;bottom:0;border-left:1px solid #dce1d3}.deadline-item:last-child{padding-bottom:0}.timeline-dot{width:21px;height:21px;border:1px solid #acba9c;background:var(--white);border-radius:50%;position:relative;margin-top:1px;display:grid;place-items:center;color:#738665}.timeline-dot:after{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.deadline-item:first-child .timeline-dot{background:var(--accent);border-color:var(--accent);color:#fff}.deadline-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.deadline-main{font-size:14px;font-weight:650;letter-spacing:.02em}.deadline-main time{font-variant-numeric:tabular-nums}.deadline-time{font-size:11px;margin-left:6px;font-weight:500;white-space:nowrap}.status-pill{display:inline-block;padding:3px 8px;border-radius:5px;background:var(--green-soft);font-size:10px;color:#657754;white-space:nowrap}.status-pill.urgent{background:var(--accent-soft);color:var(--accent)}.status-pill.overdue{background:#f9e9e6;color:var(--danger)}.deadline-supplier{font-size:12px;font-weight:600;margin-top:4px}.deadline-ingredients{font-size:10px;color:var(--muted);margin-top:2px}.delivery{font-size:10px;color:var(--muted);display:flex;gap:4px;align-items:center;margin-top:5px}.delivery svg{width:13px;height:13px}.deadline-footer{border-top:1px dashed var(--line);font-size:10px;color:var(--muted);padding-top:13px;margin-top:20px}.invalid-state{text-align:center;padding:70px 25px;color:var(--muted)}.invalid-state .icon{width:34px;height:34px;color:var(--accent);margin-bottom:12px}.invalid-state h2{font-size:16px;color:var(--ink);margin-bottom:8px}.invalid-state p{font-size:12px}.page-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1248px;margin:auto;padding:0 28px 25px;font-size:10px;color:#7c8477}.page-footer span:first-child{letter-spacing:.05em}.recipe-details{margin-top:18px;font-size:11px;color:var(--muted)}.recipe-details summary{cursor:pointer;min-height:32px;display:list-item}.recipe-details p{padding:3px 0 3px 15px;line-height:1.9}.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);background:var(--green);color:#fff;padding:12px 18px;border-radius:11px;box-shadow:0 7px 30px #16261920;z-index:50;font-size:12px;opacity:0;pointer-events:none;transition:.2s;width:max-content;max-width:calc(100% - 32px)}.toast.visible{opacity:1;transform:translate(-50%,0)}
+    dialog{border:1px solid var(--line);border-radius:20px;background:var(--white);color:var(--ink);padding:0;width:min(720px,calc(100% - 28px));max-height:88vh;box-shadow:0 24px 90px #1e302c30}dialog::backdrop{background:#1e302c70;backdrop-filter:blur(3px)}.dialog-head{padding:22px 25px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:15px;border-bottom:1px solid var(--line)}.dialog-head h2{font-size:19px}.dialog-head p{font-size:11px;color:var(--muted);margin-top:5px}.close-button{width:36px;min-height:36px;display:grid;place-items:center;border-radius:50%;background:var(--paper);font-size:22px}.dialog-body{padding:23px 25px}.settings-section+.settings-section{margin-top:28px}.settings-section h3{font-size:14px;margin-bottom:6px}.settings-intro{font-size:11px;color:var(--muted);margin-bottom:15px}.recipe-edit-row{display:grid;grid-template-columns:1fr 110px 35px;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding:9px 0;font-size:12px}.recipe-edit-row .input{text-align:right;min-height:38px;padding:5px 9px;font-size:14px}.settings-supplier{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px;background:#fafbf6}.settings-supplier h4{font-size:13px;margin:0 0 12px}.settings-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.settings-grid label,.closed-label,.closures-label{font-size:10px;display:block;color:var(--muted)}.settings-grid .input{margin-top:5px;background:white;font-size:13px}.closed-label{margin-top:13px;margin-bottom:5px}.weekday-options{display:flex;gap:7px;flex-wrap:wrap}.weekday-option{display:inline-flex;align-items:center;gap:4px;min-height:34px;font-size:11px;cursor:pointer}.weekday-option input{width:15px;height:15px;accent-color:var(--green);margin:0}.closures-label{margin-top:10px}.closures-label .input{font-size:12px;min-height:38px;margin-top:5px}.dialog-foot{padding:16px 25px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);background:var(--white);position:sticky;bottom:0}.dialog-foot .text-button{font-size:10px;padding:5px 0}.dialog-foot-actions{display:flex;gap:8px}.copy-textarea{height:280px;resize:vertical;line-height:1.8;font-size:13px}.copy-dialog-body{padding:20px 25px}.print-only{display:none}
+    @media(min-width:1350px){main{padding-top:45px}.hero{margin-bottom:36px}.hero h1{font-size:38px}}
+    @media(max-width:1050px){.workspace{grid-template-columns:285px minmax(0,1fr);gap:18px}.reservation{padding:22px 18px}.summary-card{padding:14px 12px}.summary-grid{gap:8px;grid-template-columns:1fr 1fr 1.55fr}.summary-number{font-size:29px}.deadline-summary .summary-number{font-size:23px}.panel{padding:20px 18px}.summary-label{font-size:9px}.summary-label svg{display:none}.brand-note{display:none}.deadline-main{font-size:12px}}
+    @media(max-width:800px){.workspace{grid-template-columns:1fr}.reservation{position:static;padding:23px}.reservation-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}.reservation-fields .course-field{grid-column:1 / -1}.course-options{grid-template-columns:repeat(3,minmax(0,1fr))}.course-surface{padding:11px 9px;gap:8px}.course-description{font-size:9px}.form-divider{display:none}.sample-note{grid-column:1 / -1;margin-top:14px}.hero{margin-bottom:26px}.hero h1{font-size:31px}.hero p{font-size:12px}.summary-grid{grid-template-columns:1fr 1fr 1.6fr}.summary-label{font-size:10px}.summary-card{padding:17px}.summary-label svg{display:block}.summary-number{font-size:32px}.deadline-summary .summary-number{font-size:27px}.result-heading{margin-top:6px}.panel{padding:23px}.deadline-main{font-size:14px}.topbar-inner{padding:17px 24px}main{padding:29px 24px 32px}.page-footer{padding:0 24px 24px}.top-actions{gap:10px}}
+    @media(max-width:540px){.topbar-inner{padding:15px 18px}.brand-icon{width:35px;height:35px;border-radius:10px}.brand-name{font-size:21px}.save-status{display:none}.top-actions .text-button{font-size:11px;padding:5px 8px}.top-actions{gap:0}main{padding:25px 16px 28px}.hero{margin-bottom:22px;gap:10px}.hero h1{font-size:27px;letter-spacing:.04em}.hero p{font-size:11px;max-width:245px;line-height:1.8}.eyebrow{font-size:9px}.hero-stamp{width:52px;height:52px;font-size:11px;margin:0;flex-shrink:0}.reservation{padding:21px 19px}.reservation-fields{display:block}.field{margin-top:20px}.course-options{display:grid;grid-template-columns:1fr}.course-surface{padding:12px;gap:12px}.course-name{font-size:13px}.course-description{font-size:10px}.course-surface>span:last-child{display:flex;justify-content:space-between;gap:6px;align-items:center;flex:1}.summary-grid{grid-template-columns:1fr 1fr;gap:10px}.summary-card{padding:14px 16px}.deadline-summary{grid-column:1 / -1;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:9px;padding:15px 17px}.deadline-summary .summary-number{grid-column:2;grid-row:1 / 3;margin:0;font-size:25px}.deadline-summary .summary-detail{grid-column:1;grid-row:2;font-size:10px}.summary-number{font-size:32px}.result-heading h2{font-size:16px}.panel{padding:20px 16px;margin-bottom:16px}.panel-header{align-items:flex-start}.panel-title h3{font-size:14px}.panel-subtitle{font-size:9px}.ingredients th:first-child{width:31px}.check-label{width:30px}.supplier-column{display:none}.ingredient-name{font-size:12px}.amount strong{font-size:23px}.ingredient-detail{font-size:10px}.deadline-main{font-size:12px}.deadline-time{margin-left:3px;font-size:10px}.status-pill{font-size:9px;padding:3px 6px}.deadline-row{gap:5px}.page-footer{padding:0 18px 22px;flex-wrap:wrap;font-size:9px}.dialog-head{padding:19px}.dialog-body{padding:19px}.dialog-foot{padding:14px 18px;flex-wrap:wrap}.dialog-foot-actions{margin-left:auto}.settings-grid{grid-template-columns:1fr 1fr;gap:10px}.settings-grid label:first-child{grid-column:1/-1}.settings-supplier{padding:13px}.weekday-options{gap:8px}.recipe-edit-row{grid-template-columns:1fr 85px 24px;font-size:11px}.input{font-size:16px}.buffer-description,.sample-note{font-size:10px}.copy-dialog-body{padding:18px}}
+    .hero h1 span{display:inline-block}.mobile-results{display:none}
+    @media(max-width:800px){.mobile-results{display:flex;width:100%;margin-top:18px}}
+    @media(max-width:540px){.hero-stamp{display:none}.course-name{white-space:nowrap}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    @media print{@page{size:A4;margin:13mm}body{background:white;font-size:11px}.topbar{background:white;border:0}.topbar-inner{padding:0 0 15px}.brand-note{display:block}.top-actions,.hero,.reservation,.panel-actions,.page-footer,.live-tag,.toast,.skip,.recipe-details,dialog{display:none!important}main{padding:0;max-width:none}.workspace{display:block}.card{box-shadow:none;break-inside:avoid}.panel{padding:15px;margin-bottom:13px}.summary-grid{margin-bottom:14px}.summary-card{padding:12px}.deadline-summary{background:white;color:var(--ink);border-color:var(--line)}.deadline-summary .summary-label,.deadline-summary .summary-detail{color:var(--muted)}.summary-overdue{color:var(--danger)!important}.summary-number{font-size:25px}.summary-label{font-size:10px}.ingredients td{padding:8px 0}.deadline-list{margin-top:12px}.deadline-item{padding-bottom:12px}.print-only{display:block;font-size:10px;color:var(--muted);margin-top:10px}.check-label{min-height:25px}.progress-track{margin-top:10px}.alert{padding:8px 10px}.deadline-footer{margin-top:12px;padding-top:9px}a{color:inherit}.supplier-column{display:table-cell}}
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 12h18c-1 9-17 9-18 0Z M8 3c-2 2 2 3 0 5 M13 2c-2 2 2 3 0 5 M18 3c-2 2 2 3 0 5 M8 21h8"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><rect x="5" y="4" width="15" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h7M9 16h7"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c-5-10 2-15 15-15 0 13-5 20-15 15ZM5 19l9-9"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 8V3H3v13h5"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 17H3V9h18v8h-3M6 14h12v7H6zM17 12h1"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v.2"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 5h12v12H2zM14 9h4l4 4v4h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  </svg>
+  <a class="skip" href="#reservation-form">予約の入力へ</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-icon"><svg class="icon" aria-hidden="true"><use href="#i-bowl"/></svg></span><span class="brand-name">仕込み帖</span><span class="brand-note">宴会・団体予約の準備に</span></div>
+      <div class="top-actions"><span id="save-status" class="save-status" role="status">このブラウザに自動保存</span><button id="settings-button" class="text-button" type="button"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg>お店の設定</button></div>
+    </div>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div><div class="eyebrow">BANQUET PREPARATION NOTE</div><h1 id="page-title"><span>人数が決まれば、</span><span>仕込みが見える。</span></h1><p>食材の量も、発注のタイミングも。宴会の段取りを、この一枚に。</p></div>
+      <div class="hero-stamp" aria-hidden="true"><span>準備</span><span>万端</span></div>
+    </section>
+    <noscript><p class="alert">このページの計算にはJavaScriptを使用します。ブラウザの設定でJavaScriptを有効にしてください。</p></noscript>
+    <div class="workspace">
+      <aside class="reservation card" aria-labelledby="reservation-title">
+        <div class="section-heading"><span class="step">01</span><h2 id="reservation-title">ご予約の内容</h2></div>
+        <p class="section-hint">変更すると、仕込み量と締切にすぐ反映されます。</p>
+        <form id="reservation-form" novalidate>
+          <div class="reservation-fields">
+            <div class="field"><label class="field-label" for="reservation-name">予約名・メモ <span class="optional">任意</span></label><input id="reservation-name" class="input" type="text" maxlength="60" placeholder="例：金曜日の忘年会" autocomplete="off"></div>
+            <div class="field"><label class="field-label" for="event-date">宴会日</label><input id="event-date" class="input" type="date" required min="2000-01-01" max="2099-12-31" aria-describedby="date-error"><p id="date-error" class="field-error" hidden>宴会日を選んでください（2000〜2099年）。</p></div>
+            <div class="field"><label class="field-label" for="guests">参加人数</label><div class="people-control"><button id="minus" type="button" class="stepper" aria-label="人数を1人減らす">−</button><div class="people-value"><input id="guests" type="number" value="20" min="1" max="200" step="1" inputmode="numeric" required aria-describedby="guests-error"><span>名</span></div><button id="plus" type="button" class="stepper" aria-label="人数を1人増やす">＋</button></div><input id="guests-range" class="range" type="range" min="1" max="200" step="1" value="20" aria-label="参加人数をスライダーで調整"><div class="range-ends" aria-hidden="true"><span>1名</span><span>200名</span></div><div class="presets" aria-label="よく使う人数"><button class="preset" type="button" data-guests="10" aria-pressed="false">10名</button><button class="preset" type="button" data-guests="20" aria-pressed="true">20名</button><button class="preset" type="button" data-guests="30" aria-pressed="false">30名</button><button class="preset" type="button" data-guests="50" aria-pressed="false">50名</button></div><p id="guests-error" class="field-error" hidden>人数は1〜200の整数で入力してください。</p></div>
+            <fieldset class="field course-field"><legend class="field-label">コースを選ぶ</legend><div class="course-options">
+              <label class="course-option"><input type="radio" name="course" value="standard" checked><span class="course-surface"><span class="radio-dot" aria-hidden="true"></span><span><span class="course-name">定番おまかせ</span><span class="course-description">唐揚げ・焼き魚など</span></span></span></label>
+              <label class="course-option"><input type="radio" name="course" value="hearty"><span class="course-surface"><span class="radio-dot" aria-hidden="true"></span><span><span class="course-name">ボリューム満足</span><span class="course-description">唐揚げ・生姜焼きなど</span></span></span></label>
+              <label class="course-option"><input type="radio" name="course" value="premium"><span class="course-surface"><span class="radio-dot" aria-hidden="true"></span><span><span class="course-name">ちょっと贅沢</span><span class="course-description">牛ステーキ・海鮮など</span></span></span></label>
+            </div></fieldset>
+            <div class="form-divider"></div>
+            <div class="field"><label class="field-label" for="buffer">余裕を持って仕込む <output class="buffer-value" id="buffer-value" for="buffer">＋10%</output></label><input id="buffer" class="range" type="range" min="0" max="20" step="1" value="10" aria-describedby="buffer-description"><div class="range-ends" aria-hidden="true"><span>余裕分なし</span><span>＋20%</span></div><p class="buffer-description" id="buffer-description">おかわりや人数変更に備え、少し多めに。</p></div>
+            <div class="sample-note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><p>初期の分量と卸条件はサンプルです。<br>「お店の設定」で実際の条件に調整できます。</p></div>
+          </div>
+        </form>
+        <button class="button button-primary mobile-results" id="results-jump" type="button">仕込み量と締切を見る ↓</button>
+      </aside>
+      <div>
+        <div id="invalid-state" class="invalid-state card" hidden><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><h2>予約の内容を確認してください</h2><p>人数と宴会日を正しく入力すると、<br>仕込み量と発注締切が表示されます。</p></div>
+        <section class="results" id="results" aria-labelledby="result-title">
+          <div class="result-heading"><div><h2 id="result-title" tabindex="-1">今回の仕込みと発注</h2><p class="result-meta" id="result-meta"></p></div><span class="live-tag">自動計算</span></div>
+          <div class="summary-grid">
+            <div class="summary-card card"><div class="summary-label"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>仕込みの人数</div><div class="summary-number"><span id="summary-guests">20</span><small>名分</small></div><div class="summary-detail" id="summary-buffer">＋余裕分 10%</div></div>
+            <div class="summary-card card"><div class="summary-label"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg>準備する食材</div><div class="summary-number"><span id="summary-items">6</span><small>品目</small></div><div class="summary-detail" id="summary-suppliers">4つの卸先</div></div>
+            <div class="summary-card deadline-summary card"><div class="summary-label"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>いちばん早い発注締切</div><div class="summary-number" id="first-deadline"></div><div class="summary-detail" id="first-supplier"></div></div>
+          </div>
+          <div id="deadline-alert" class="alert" hidden><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><p id="deadline-alert-text"></p></div>
+          <section class="panel card" aria-labelledby="ingredients-title">
+            <div class="panel-header"><div><div class="panel-title"><span class="step">02</span><h3 id="ingredients-title">食材ごとの仕込み量</h3></div><p class="panel-subtitle">準備できた食材にチェックを入れましょう。</p></div><span class="progress-label"><strong id="checked-count">0</strong> / <span id="ingredient-count">6</span> 準備済み</span></div>
+            <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+            <table class="ingredients"><caption class="sr-only">食材ごとの1人前の分量と、余裕分を含めた仕込み量</caption><thead><tr><th scope="col"><span class="sr-only">準備済み</span></th><th scope="col">食材 / 1人前の目安</th><th scope="col" class="supplier-column">発注先</th><th scope="col" class="amount-col">仕込み量</th></tr></thead><tbody id="ingredients-body"></tbody></table>
+            <div class="list-foot"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><p>仕込み前の重量を10g単位で切り上げ。主食材のみを計算し、調味料・飲料・在庫は含みません。</p></div>
+            <details class="recipe-details"><summary>このコースの料理と計算方法</summary><p id="course-menu"></p><p>1人前の分量 × 人数 ×（1 ＋ 余裕率）。予約の人数・コース・日付・余裕率やお店の設定を変えると、準備済みチェックは外れます。</p></details>
+            <div class="panel-actions"><button id="copy-button" class="button button-primary copy-button" type="button"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>リストをコピー</button><button id="print-button" class="button" type="button"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>印刷</button></div>
+          </section>
+          <section class="panel card" aria-labelledby="deadline-title"><div class="panel-header"><div><div class="panel-title"><span class="step">03</span><h3 id="deadline-title">卸への発注スケジュール</h3></div><p class="panel-subtitle">締切の早い順に表示しています。時刻は日本時間です。</p></div><svg class="icon" aria-hidden="true" style="color:#80906f"><use href="#i-clock"/></svg></div><ol id="deadline-list" class="deadline-list"></ol><p class="deadline-footer">納品日と発注日は、設定した休業日を避けて前倒しします。祝日・臨時休業日は自動取得しません。「お店の設定」で追加してください。発注は各卸先へ別途ご連絡ください。</p></section>
+          <p class="print-only">分量・締切は設定に基づく目安です。店舗のレシピと各卸先の取引条件をご確認ください。</p>
+        </section>
+      </div>
+    </div>
+    <p class="sr-only" id="calculation-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  </main>
+  <footer class="page-footer"><span>仕込み帖 — お店の段取りを、少し軽く。</span><span>入力内容はこのブラウザに保存されます。</span></footer>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form">
+      <div class="dialog-head"><div><h2 id="settings-title">お店の設定</h2><p>お店のレシピと、卸先の取引条件に合わせてください。</p></div><button type="button" class="close-button" id="settings-close" aria-label="設定を閉じる">×</button></div>
+      <div class="dialog-body"><section class="settings-section"><h3 id="recipe-settings-title">1人前の分量</h3><p class="settings-intro">現在選んでいるコースの分量です。仕込み前の重量をgで入力してください。</p><div id="recipe-settings"></div></section><section class="settings-section"><h3>卸先の発注ルール</h3><p class="settings-intro">「納品の何日前」は暦日、「何営業日前までに発注」は休業日を除いた日数です。納品予定日が休業日なら、前の営業日に納品する前提で計算します。</p><div id="supplier-settings"></div></section><p class="field-error" id="settings-error" role="alert" hidden></p></div>
+      <div class="dialog-foot"><button class="text-button" id="settings-reset" type="button">全コース・卸条件をサンプルに戻す</button><div class="dialog-foot-actions"><button class="button" id="settings-cancel" type="button">キャンセル</button><button class="button button-primary" type="submit">設定を保存</button></div></div>
+    </form>
+  </dialog>
+  <dialog id="copy-dialog" aria-labelledby="copy-title"><div class="dialog-head"><div><h2 id="copy-title">リストをコピー</h2><p>自動コピーを利用できないため、下のテキストを選択してコピーしてください。</p></div><button class="close-button" type="button" id="copy-close" aria-label="コピー画面を閉じる">×</button></div><div class="copy-dialog-body"><label for="copy-text" class="sr-only">仕込み・発注リスト</label><textarea id="copy-text" class="input copy-textarea" readonly></textarea><button id="select-copy-text" class="button" type="button" style="margin-top:10px">テキストをすべて選択</button></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      'use strict';
+      // All quantities and supplier rules below are editable sample data.
+      // This application has no dependencies, requests, credentials, or backend.
+      const STORAGE_KEY = 'enkai-shikomicho-v1';
+      const DAY = 86400000;
+      const JST_OFFSET = 9 * 3600000;
+      const DAYS = ['日','月','火','水','木','金','土'];
+      const INGREDIENTS = {
+        chicken:{name:'鶏もも肉',note:'唐揚げ用',supplier:'meat'},
+        fish:{name:'魚の切り身',note:'焼き魚用',supplier:'fish'},
+        leaves:{name:'葉物野菜',note:'サラダ用',supplier:'vegetable'},
+        edamame:{name:'枝豆',note:'さや付き',supplier:'pantry'},
+        rice:{name:'米',note:'炊く前の生米',supplier:'pantry'},
+        mushrooms:{name:'きのこ',note:'炊き込みご飯用',supplier:'vegetable'},
+        pork:{name:'豚肉',note:'生姜焼き用',supplier:'meat'},
+        potato:{name:'じゃがいも',note:'ポテト用',supplier:'vegetable'},
+        onion:{name:'玉ねぎ',note:'生姜焼き用',supplier:'vegetable'},
+        beef:{name:'牛肉',note:'ステーキ用',supplier:'meat'},
+        sashimi:{name:'刺身用魚',note:'海鮮サラダ用',supplier:'fish'},
+        fruit:{name:'季節の果物',note:'デザート用',supplier:'vegetable'}
+      };
+      const COURSES = {
+        standard:{name:'定番おまかせ',menu:'枝豆・サラダ・鶏の唐揚げ・焼き魚・炊き込みご飯',items:['chicken','fish','leaves','edamame','rice','mushrooms']},
+        hearty:{name:'ボリューム満足',menu:'枝豆・サラダ・鶏の唐揚げ・豚の生姜焼き・ポテト・ご飯',items:['chicken','pork','leaves','edamame','potato','rice','onion']},
+        premium:{name:'ちょっと贅沢',menu:'枝豆・海鮮サラダ・牛ステーキ・焼き魚・炊き込みご飯・果物',items:['beef','sashimi','fish','leaves','edamame','rice','mushrooms','fruit']}
+      };
+      const DEFAULT_SETTINGS = {
+        recipes:{standard:{chicken:120,fish:60,leaves:50,edamame:60,rice:75,mushrooms:25},hearty:{chicken:120,pork:100,leaves:40,edamame:60,potato:100,rice:100,onion:40},premium:{beef:100,sashimi:70,fish:70,leaves:40,edamame:40,rice:70,mushrooms:25,fruit:80}},
+        suppliers:{
+          meat:{name:'精肉卸',lead:2,cutoff:'12:00',deliveryDays:1,closed:[0],closures:[]},
+          fish:{name:'鮮魚卸',lead:2,cutoff:'10:00',deliveryDays:0,closed:[0,3],closures:[]},
+          vegetable:{name:'青果卸',lead:1,cutoff:'15:00',deliveryDays:1,closed:[0],closures:[]},
+          pantry:{name:'食材卸',lead:3,cutoff:'12:00',deliveryDays:2,closed:[0,6],closures:[]}
+        }
+      };
+      const $ = id => document.getElementById(id);
+      const clone = value => JSON.parse(JSON.stringify(value));
+      const validInteger = (n,min,max) => typeof n === 'number' && Number.isInteger(n) && n >= min && n <= max;
+      const has = (obj,key) => Object.prototype.hasOwnProperty.call(obj,key);
+      const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+      const isoDate = date => date.toISOString().slice(0,10);
+      // Calendar-only dates use UTC arithmetic; cutoff instants are converted from JST.
+      function parseDate(value) {
+        if(typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+        const [y,m,d] = value.split('-').map(Number);
+        if(y < 2000 || y > 2099) return null;
+        const date = new Date(Date.UTC(y,m-1,d));
+        return isoDate(date) === value ? date : null;
+      }
+      function todayISO(now = new Date()) { return isoDate(new Date(now.getTime() + JST_OFFSET)); }
+      const addDays = (date,n) => new Date(date.getTime() + n * DAY);
+      const dateLabel = (date,year = false) => `${year ? date.getUTCFullYear() + '年' : ''}${date.getUTCMonth()+1}/${date.getUTCDate()}（${DAYS[date.getUTCDay()]}）`;
+      function defaultState() { return {version:1,name:'',date:isoDate(addDays(parseDate(todayISO()),14)),guests:20,course:'standard',buffer:10,checked:[],settings:clone(DEFAULT_SETTINGS)}; }
+      function validSettings(value) {
+        if(!value || !value.recipes || !value.suppliers) return false;
+        for(const [course,data] of Object.entries(COURSES)) {
+          if(!value.recipes[course] || !data.items.every(id => validInteger(value.recipes[course][id],1,5000))) return false;
+        }
+        for(const id of Object.keys(DEFAULT_SETTINGS.suppliers)) {
+          const s = value.suppliers[id];
+          if(!s || !validInteger(s.lead,0,14) || !validInteger(s.deliveryDays,0,7) || typeof s.cutoff !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(s.cutoff)) return false;
+          if(!Array.isArray(s.closed) || s.closed.length > 6 || !s.closed.every(d => validInteger(d,0,6)) || new Set(s.closed).size !== s.closed.length) return false;
+          if(!Array.isArray(s.closures) || s.closures.length > 60 || !s.closures.every(d => parseDate(d))) return false;
+        }
+        return true;
+      }
+      let storageAvailable = true;
+      function loadState() {
+        const fallback = defaultState();
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return fallback;
+          const saved = JSON.parse(raw);
+          if(!saved || saved.version !== 1 || typeof saved.name !== 'string' || saved.name.length > 60 || !parseDate(saved.date) || !validInteger(saved.guests,1,200) || typeof saved.course !== 'string' || !has(COURSES,saved.course) || !validInteger(saved.buffer,0,20) || !validSettings(saved.settings)) return fallback;
+          const settings = clone(DEFAULT_SETTINGS);
+          for(const key of Object.keys(COURSES)) for(const id of COURSES[key].items) settings.recipes[key][id] = saved.settings.recipes[key][id];
+          for(const id of Object.keys(settings.suppliers)) {
+            for(const key of ['lead','deliveryDays','cutoff','closed','closures']) settings.suppliers[id][key] = saved.settings.suppliers[id][key];
+          }
+          return {version:1,name:saved.name,date:saved.date,guests:saved.guests,course:saved.course,buffer:saved.buffer,settings,checked:Array.isArray(saved.checked) ? [...new Set(saved.checked.filter(id => COURSES[saved.course].items.includes(id)))] : []};
+        } catch(error) { storageAvailable = false; return fallback; }
+      }
+      let state = loadState();
+      let currentPlan = null;
+      let settingsDraft = null;
+      let toastTimer;
+      let announceTimer;
+      let validForm = true;
+      function save() {
+        try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); storageAvailable = true; }
+        catch(error) { storageAvailable = false; }
+        $('save-status').textContent = storageAvailable ? 'このブラウザに保存済み' : '保存なしで利用中';
+        document.querySelector('.page-footer span:last-child').textContent = storageAvailable ? '入力内容はこのブラウザに保存されます。' : 'この環境では保存できません。必要なリストをコピーしてください。';
+      }
+      function toast(message) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.add('visible'); toastTimer = setTimeout(() => $('toast').classList.remove('visible'),3500); }
+      function announce(message) { clearTimeout(announceTimer); announceTimer = setTimeout(() => { $('calculation-status').textContent = message; },250); }
+      function isOpen(date,supplier) { return !supplier.closed.includes(date.getUTCDay()) && !supplier.closures.includes(isoDate(date)); }
+      function previousOpen(date,supplier) {
+        let cursor = date;
+        // At least one open weekday and at most 60 closures are enforced on input.
+        for(let i=0;i<500;i++) { if(isOpen(cursor,supplier)) return cursor; cursor = addDays(cursor,-1); }
+        throw new Error('営業日を確認できません。卸の休業日設定を見直してください。');
+      }
+      function supplierSchedule(id,eventDate) {
+        const supplier = state.settings.suppliers[id];
+        const requestedDelivery = addDays(eventDate,-supplier.deliveryDays);
+        const delivery = previousOpen(requestedDelivery,supplier);
+        let deadline = delivery;
+        for(let n=0;n<supplier.lead;n++) deadline = previousOpen(addDays(deadline,-1),supplier);
+        const [hour,minute] = supplier.cutoff.split(':').map(Number);
+        return {id,supplier,delivery,deadline,adjusted:delivery.getTime() !== requestedDelivery.getTime(),timestamp:deadline.getTime()+hour*3600000+minute*60000-JST_OFFSET};
+      }
+      function calculate() {
+        const items = COURSES[state.course].items.map(id => {
+          const base = state.settings.recipes[state.course][id];
+          // Integer numerator avoids floating point errors at 10 g boundaries.
+          const grams = Math.ceil(base * state.guests * (100 + state.buffer) / 1000) * 10;
+          return {id,...INGREDIENTS[id],base,grams};
+        });
+        const suppliers = [...new Set(items.map(item => item.supplier))];
+        const schedules = suppliers.map(id => ({...supplierSchedule(id,parseDate(state.date)),items:items.filter(item => item.supplier === id)})).sort((a,b) => a.timestamp-b.timestamp);
+        return {items,schedules};
+      }
+      function amountParts(grams) { return grams >= 1000 ? {value:new Intl.NumberFormat('ja-JP',{maximumFractionDigits:2}).format(grams/1000),unit:'kg'} : {value:String(grams),unit:'g'}; }
+      function statusFor(schedule,now = Date.now()) {
+        if(now >= schedule.timestamp) return {label:'締切超過',className:'overdue'};
+        const today = parseDate(todayISO(new Date(now)));
+        const days = Math.round((schedule.deadline-today)/DAY);
+        if(days === 0) return {label:'本日締切',className:'urgent'};
+        if(days === 1) return {label:'明日締切',className:'urgent'};
+        return {label:`あと${days}日`,className:''};
+      }
+      function renderProgress() {
+        if(!currentPlan) return;
+        const checked = currentPlan.items.filter(item => state.checked.includes(item.id)).length;
+        $('checked-count').textContent = checked;
+        $('ingredient-count').textContent = currentPlan.items.length;
+        $('progress-fill').style.width = `${checked/currentPlan.items.length*100}%`;
+      }
+      function renderSchedules() {
+        if(!currentPlan || !validForm) return;
+        const now = Date.now();
+        const first = currentPlan.schedules[0];
+        const firstStatus = statusFor(first,now);
+        $('first-deadline').innerHTML = `${first.deadline.getUTCMonth()+1}/${first.deadline.getUTCDate()} <small>${first.supplier.cutoff}</small>`;
+        $('first-supplier').textContent = `${first.supplier.name} · ${firstStatus.label}`;
+        $('first-supplier').classList.toggle('summary-overdue',firstStatus.className === 'overdue');
+        const expired = currentPlan.schedules.filter(s => now >= s.timestamp);
+        const pastEvent = state.date < todayISO(new Date(now));
+        $('deadline-alert').hidden = !expired.length && !pastEvent;
+        $('deadline-alert-text').textContent = `${pastEvent ? '過去の宴会日が選ばれています。' : ''}${expired.length ? expired.map(s => s.supplier.name).join('・') + 'の発注締切を過ぎています。納品できるか、卸先へ直接ご確認ください。' : ''}`;
+        $('deadline-list').innerHTML = currentPlan.schedules.map(s => {
+          const status = statusFor(s,now);
+          const closed = s.supplier.closed.map(d => DAYS[d]).join('・') || 'なし';
+          return `<li class="deadline-item"><span class="timeline-dot" aria-hidden="true"></span><div><div class="deadline-row"><div class="deadline-main"><time datetime="${isoDate(s.deadline)}T${s.supplier.cutoff}:00+09:00">${dateLabel(s.deadline)}<span class="deadline-time">${s.supplier.cutoff} まで</span></time></div><span class="status-pill ${status.className}">${status.label}</span></div><div class="deadline-supplier">${s.supplier.name}</div><p class="deadline-ingredients">${s.items.map(item => item.name).join('・')}</p><p class="delivery"><svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>納品予定 ${dateLabel(s.delivery)}${s.adjusted ? '（休業日を避けて前倒し）' : ''}</p><p class="deadline-ingredients">納品の${s.supplier.lead}営業日前に発注 ／ 定休：${closed}${s.supplier.closures.length ? '・臨時休業の設定あり' : ''}</p></div></li>`;
+        }).join('');
+      }
+      function render() {
+        if(!validForm) return;
+        currentPlan = calculate();
+        const course = COURSES[state.course];
+        $('results').hidden = false;
+        $('invalid-state').hidden = true;
+        $('result-meta').textContent = `${state.name ? state.name + ' ／ ' : ''}${dateLabel(parseDate(state.date),true)} · ${course.name}`;
+        $('summary-guests').textContent = state.guests;
+        $('summary-buffer').textContent = state.buffer ? `＋余裕分 ${state.buffer}%` : '余裕分なし';
+        $('summary-items').textContent = currentPlan.items.length;
+        $('summary-suppliers').textContent = `${currentPlan.schedules.length}つの卸先`;
+        $('course-menu').textContent = course.menu;
+        $('ingredients-body').innerHTML = currentPlan.items.map(item => {
+          const amount = amountParts(item.grams);
+          const checked = state.checked.includes(item.id);
+          return `<tr class="${checked ? 'is-done' : ''}"><td class="check-cell"><label class="check-label"><input type="checkbox" data-item="${item.id}" ${checked ? 'checked' : ''} aria-label="${item.name}を準備済みにする"></label></td><td><span class="ingredient-name">${item.name}</span><span class="ingredient-detail">${item.note} · 1人前 ${item.base}g</span></td><td class="supplier-column"><span class="supplier-tag">${state.settings.suppliers[item.supplier].name}</span></td><td class="amount"><strong>${amount.value}</strong><span>${amount.unit}</span></td></tr>`;
+        }).join('');
+        renderProgress();
+        renderSchedules();
+        announce(`${state.guests}名、${course.name}、余裕分${state.buffer}%で${currentPlan.items.length}品目の仕込み量と${currentPlan.schedules.length}件の発注締切を更新しました。`);
+      }
+      function syncControls() {
+        $('reservation-name').value = state.name;
+        $('event-date').value = state.date;
+        $('guests').value = state.guests;
+        $('guests-range').value = state.guests;
+        $('buffer').value = state.buffer;
+        $('buffer-value').textContent = `＋${state.buffer}%`;
+        document.querySelectorAll('input[name=course]').forEach(input => { input.checked = input.value === state.course; });
+        updateGuestControls();
+      }
+      function updateGuestControls() {
+        const value = Number($('guests').value);
+        $('minus').disabled = validInteger(value,1,200) && value === 1;
+        $('plus').disabled = validInteger(value,1,200) && value === 200;
+        document.querySelectorAll('[data-guests]').forEach(button => button.setAttribute('aria-pressed',String(Number(button.dataset.guests) === value)));
+      }
+      function updateReservation() {
+        const guests = Number($('guests').value);
+        const date = $('event-date').value;
+        const guestsValid = $('guests').value.trim() !== '' && validInteger(guests,1,200);
+        const dateValid = Boolean(parseDate(date));
+        $('guests-error').hidden = guestsValid;
+        $('date-error').hidden = dateValid;
+        $('guests').setAttribute('aria-invalid',String(!guestsValid));
+        $('event-date').setAttribute('aria-invalid',String(!dateValid));
+        if(guestsValid) $('guests-range').value = guests;
+        updateGuestControls();
+        $('buffer-value').textContent = `＋${$('buffer').value}%`;
+        validForm = guestsValid && dateValid;
+        $('results-jump').disabled = !validForm;
+        if(!validForm) { $('results').hidden = true; $('invalid-state').hidden = false; announce('人数と宴会日を確認してください。'); return; }
+        const course = document.querySelector('input[name=course]:checked').value;
+        const buffer = Number($('buffer').value);
+        const changed = guests !== state.guests || course !== state.course || date !== state.date || buffer !== state.buffer;
+        if(changed) state.checked = [];
+        Object.assign(state,{guests,date,course,buffer,name:$('reservation-name').value.trim().slice(0,60)});
+        save(); render();
+      }
+      function setGuests(value) { $('guests').value = Math.max(1,Math.min(200,value)); updateReservation(); }
+      function populateSettings() {
+        const course = COURSES[state.course];
+        $('recipe-settings-title').textContent = `「${course.name}」の1人前の分量`;
+        $('recipe-settings').innerHTML = course.items.map(id => `<div class="recipe-edit-row"><label for="recipe-${id}">${INGREDIENTS[id].name} <span class="optional">${INGREDIENTS[id].note}</span></label><input id="recipe-${id}" class="input" type="number" min="1" max="5000" step="1" required value="${settingsDraft.recipes[state.course][id]}" inputmode="numeric"><span>g</span></div>`).join('');
+        $('supplier-settings').innerHTML = Object.entries(settingsDraft.suppliers).map(([id,s]) => `<section class="settings-supplier"><h4>${s.name}</h4><div class="settings-grid"><label for="delivery-${id}">宴会の何日前に納品（暦日）<input id="delivery-${id}" class="input" type="number" min="0" max="7" step="1" required value="${s.deliveryDays}" inputmode="numeric"></label><label for="lead-${id}">何営業日前までに発注<input id="lead-${id}" class="input" type="number" min="0" max="14" step="1" required value="${s.lead}" inputmode="numeric"></label><label for="cutoff-${id}">発注の締切時刻（日本時間）<input id="cutoff-${id}" class="input" type="time" required value="${s.cutoff}"></label></div><fieldset><legend class="closed-label">毎週の休業日（少なくとも1日は営業日に）</legend><div class="weekday-options">${DAYS.map((day,index) => `<label class="weekday-option"><input type="checkbox" name="closed-${id}" value="${index}" ${s.closed.includes(index) ? 'checked' : ''}>${day}</label>`).join('')}</div></fieldset><label class="closures-label" for="closures-${id}">祝日・臨時休業日（YYYY-MM-DD、カンマ区切り・60日まで）<input id="closures-${id}" class="input" type="text" maxlength="720" value="${escapeHTML(s.closures.join(', '))}" placeholder="例：2026-12-31, 2027-01-01" autocomplete="off"></label></section>`).join('');
+        $('settings-error').hidden = true;
+      }
+      function openSettings() { settingsDraft = clone(state.settings); populateSettings(); $('settings-dialog').showModal(); }
+      function settingsError(message,input) { $('settings-error').textContent = message; $('settings-error').hidden = false; input.focus(); toast(message); }
+      function saveSettings(event) {
+        event.preventDefault();
+        if(!$('settings-form').reportValidity()) return;
+        const next = clone(settingsDraft);
+        for(const id of COURSES[state.course].items) next.recipes[state.course][id] = Number($(`recipe-${id}`).value);
+        for(const id of Object.keys(next.suppliers)) {
+          const closed = [...document.querySelectorAll(`input[name="closed-${id}"]:checked`)].map(input => Number(input.value));
+          if(closed.length === 7) { settingsError(`${next.suppliers[id].name}：営業日を1日以上残してください。`,document.querySelector(`input[name="closed-${id}"]`)); return; }
+          const input = $(`closures-${id}`);
+          const closures = [...new Set(input.value.split(/[,、\s]+/).map(s => s.trim()).filter(Boolean))];
+          if(closures.length > 60 || !closures.every(d => parseDate(d))) { settingsError(`${next.suppliers[id].name}：休業日は2000〜2099年のYYYY-MM-DD形式で、60日以内にしてください。`,input); return; }
+          Object.assign(next.suppliers[id],{closed,closures,lead:Number($(`lead-${id}`).value),cutoff:$(`cutoff-${id}`).value,deliveryDays:Number($(`delivery-${id}`).value)});
+        }
+        if(!validSettings(next)) { settingsError('分量・日数・時刻の入力を確認してください。',$('settings-form').querySelector('input')); return; }
+        state.settings = next; state.checked = []; save(); $('settings-dialog').close(); render(); toast('お店の設定を保存し、目安を更新しました');
+      }
+      function listText() {
+        const lines = ['【宴会の仕込み・発注リスト】',state.name,`${dateLabel(parseDate(state.date),true)} ／ ${COURSES[state.course].name}`,`${state.guests}名 ／ 余裕分 ${state.buffer}%`,'','■ 食材の仕込み量'];
+        for(const item of currentPlan.items) { const a = amountParts(item.grams); lines.push(`${state.checked.includes(item.id) ? '☑' : '☐'} ${item.name}（${item.note}）：${a.value}${a.unit} ／ 1人前${item.base}g`); }
+        lines.push('','■ 卸への発注締切（日本時間）');
+        for(const s of currentPlan.schedules) lines.push(`${s.supplier.name}：${dateLabel(s.deadline,true)} ${s.supplier.cutoff}まで［${statusFor(s).label}］`,`  ${s.items.map(item => item.name).join('・')}`,`  納品予定：${dateLabel(s.delivery,true)}${s.adjusted ? '（休業日により前倒し）' : ''}`);
+        lines.push('','分量・締切は設定に基づく目安です。店舗のレシピと取引条件をご確認ください。','重量は10g単位で切り上げ。調味料・飲料・在庫は含みません。発注は各卸先へ別途ご連絡ください。');
+        return lines.filter((line,index) => line || index !== 1).join('\n');
+      }
+      async function copyList() {
+        if(!validForm || !currentPlan) return;
+        const content = listText();
+        try {
+          if(!navigator.clipboard || !window.isSecureContext) throw new Error('Clipboard unavailable');
+          await navigator.clipboard.writeText(content); toast('仕込み量と発注締切をコピーしました');
+        } catch(error) { $('copy-text').value = content; $('copy-dialog').showModal(); $('copy-text').focus(); $('copy-text').select(); }
+      }
+      $('reservation-form').addEventListener('submit',event => event.preventDefault());
+      $('reservation-form').addEventListener('input',event => {
+        if(event.target.id === 'guests-range') { setGuests(Number(event.target.value)); return; }
+        updateReservation();
+      });
+      function stepGuests(delta) { const value = Number($('guests').value); setGuests((validInteger(value,1,200) ? value : state.guests) + delta); }
+      $('minus').addEventListener('click',() => stepGuests(-1));
+      $('plus').addEventListener('click',() => stepGuests(1));
+      $('results-jump').addEventListener('click',() => { if(validForm) { $('results').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',block:'start'}); $('result-title').focus({preventScroll:true}); } });
+      document.querySelectorAll('[data-guests]').forEach(button => button.addEventListener('click',() => setGuests(Number(button.dataset.guests))));
+      $('ingredients-body').addEventListener('change',event => {
+        const input = event.target;
+        if(!input.matches('input[data-item]')) return;
+        state.checked = input.checked ? [...new Set([...state.checked,input.dataset.item])] : state.checked.filter(id => id !== input.dataset.item);
+        input.closest('tr').classList.toggle('is-done',input.checked); renderProgress(); save(); announce(`${state.checked.length}品目を準備済みにしました。`);
+      });
+      $('settings-button').addEventListener('click',openSettings);
+      $('settings-form').addEventListener('submit',saveSettings);
+      $('settings-close').addEventListener('click',() => $('settings-dialog').close());
+      $('settings-cancel').addEventListener('click',() => $('settings-dialog').close());
+      $('settings-reset').addEventListener('click',() => { settingsDraft = clone(DEFAULT_SETTINGS); populateSettings(); toast('サンプルに戻しました。「設定を保存」で確定します'); });
+      $('copy-button').addEventListener('click',copyList);
+      $('print-button').addEventListener('click',() => { if(validForm) { renderSchedules(); window.print(); } });
+      $('copy-close').addEventListener('click',() => $('copy-dialog').close());
+      $('select-copy-text').addEventListener('click',() => { $('copy-text').focus(); $('copy-text').select(); });
+      document.addEventListener('visibilitychange',() => { if(!document.hidden) renderSchedules(); });
+      window.addEventListener('focus',renderSchedules);
+      setInterval(renderSchedules,30000);
+      syncControls(); save(); render();
+    })();
+  </script>
+</body>
+</html>
